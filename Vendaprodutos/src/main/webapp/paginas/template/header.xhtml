@@ -14,9 +14,13 @@
 				<p:menubar>
 					<p:menuitem value="Principal" action="#{menuBean.principal()}"></p:menuitem>
 					<p:menuitem value="Cadastrar Clientes"
-						action="#{menuBean.cadastrarCliente()}"></p:menuitem>
+						action="#{ClientesBean.cadastrarCliente()}"></p:menuitem>
 					<p:menuitem value="Listar Clientes"
-						action="#{menuBean.listarClientes}"></p:menuitem>
+						action="#{ClientesBean.listarClientes}"></p:menuitem>
+					<p:menuitem value="produtos"
+						action="#{ProdutosBean.cadastrarProdutos()}"></p:menuitem>
+					<p:menuitem value="Vendas"
+						action="#{VendaBean.cadastrarProdutos()}"></p:menuitem>
 				</p:menubar>
 
 			</h:panelGrid>
