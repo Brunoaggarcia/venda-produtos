@@ -1,109 +1,71 @@
 package br.com.vendaprodutos.dao;
 
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
+
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
-public class GenericDAO<Entidade> {
-	
-	public void salvar(Entidade entidade){
-		private Class<Entidade> classe;		
-		public GenericDao(){
-			this.classe = (Class<Entidade>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-		}		
-		Session sessao = HibernateUtil.getFabricaDeSessoes().openSession();
-		Transaction transacao = null;		
-		try{
-			transacao = sessao.beginTransaction();
-			sessao.save(entidade);
-			transacao.commit();
-		}catch(RuntimeException erro){
-			if(transacao != null){
-				transacao.rollback();
-			}
-			throw erro;
-		}finally{
-			sessao.close();
-		}		
-	}
-	
-	public List<Entidade> listar{
-		Session sessao = HibernateUtil.getFabricaDeSessoes().openSession();
-		try{
-			Criteria consulta = sessao.createCriteria(classe);
-			List<Entidade> resultado = consulta.list();
-			return resultado;
-		}catch(RuntimeException erro){
-			throw erro;
-		  }finally{
-				sessao.close();
-	}
+import br.com.vendaprodutos.util.GerenciadorPersistencia;
 
-		public Entidade buscaar(Long codigo){
-			Session sessao = HibernateUtil.getFabricaDeSessoes().openSession();
-			try{
-				Criteria consulta = sessao.createCriteria(classe);
-				consulta.add(Restrictions.idEq(codigo));
-				List<Entidade> resultado = (Entidade) consulta.uniqueResult();
-				return resultado;
-			}catch(RuntimeException erro){
-				throw erro;
-			  }finally{
-					sessao.close();
-		}
-			
-			public void excluir(Entidade entidade){
-				Session sessao = HibernateUtil.getFabricaDeSessoes().openSession();
-				Transaction transacao = null;
-				
-				try{
-					transacao = sessao.beginTransaction();
-					sessao.delete(entidade);
-					transacao.commit();
-				}catch(RuntimeException erro){
-					if(transacao != null){
-						transacao.rollback();
-					}
-					throw erro;
-				}finally{
-					sessao.close();
-				}		
-			}
-			
-			public void editar(Entidade entidade){
-				Session sessao = HibernateUtil.getFabricaDeSessoes().openSession();
-				Transaction transacao = null;
-				
-				try{
-					transacao = sessao.beginTransaction();
-					sessao.update(entidade);
-					transacao.commit();
-				}catch(RuntimeException erro){
-					if(transacao != null){
-						transacao.rollback();
-					}
-					throw erro;
-				}finally{
-					sessao.close();
-				}		
-			}
-			
-			public void merge(Entidade entidade){
-				Session sessao = HibernateUtil.getFabricaDeSessoes().openSession();
-				Transaction transacao = null;
-				
-				try{
-					transacao = sessao.beginTransaction();
-					sessao.merge(entidade);
-					transacao.commit();
-				}catch(RuntimeException erro){
-					if(transacao != null){
-						transacao.rollback();
-					}
-					throw erro;
-				}finally{
-					sessao.close();
-				}		
-			}
+import java.io.Serializable;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.TypedQuery;
+
+public abstract class GenericDAO<T extends Serializable> {
+
+    private final EntityManager em = GerenciadorPersistencia.getEntityManager();
+
+    private final Class<T> clazz;
+
+    public GenericDAO(Class<T> clazz) {
+        this.clazz = clazz;
+    }
+
+    public EntityManager getEm() {
+        return em;
+    }
+    
+    public T getById(Long id) {
+        return em.find(clazz, id);
+    }
+
+    public List<T> findAll() {
+        TypedQuery<T> q = em.createQuery(" FROM " + clazz.getSimpleName(), clazz);
+        return q.getResultList();
+    }
+
+    public void salvar(T clazz) {
+        getTransaction().begin();
+        em.persist(clazz);
+        getTransaction().commit();
+    }
+
+    public T update(T clazz) {
+        getTransaction().begin();
+        T obj = em.merge(clazz);
+        getTransaction().commit();
+        return obj;
+    }
+
+    public void excluir(T clazz) {
+        getTransaction().begin();
+        em.remove(clazz);
+        getTransaction().commit();
+    }
+
+    public void excluir(Long id) {
+        excluir(getById(id));
+    }
+
+    private EntityTransaction getTransaction() {
+        return em.getTransaction();
+    }
+
 }

@@ -15,12 +15,12 @@ public class Cliente extends GenericDomain {
 	@Column(nullable = false)
 	@Temporal(TemporalType.DATE)
 	private Date dataCadastro;
-
+	
 	@Column(nullable = false)
 	private Boolean liberado;
-
+	
 	@OneToOne
-	@s(nullable = false)
+	@JoinColumn(nullable = false)
 	private Pessoa pessoa;
 
 	public Date getDataCadastro() {
@@ -46,5 +46,4 @@ public class Cliente extends GenericDomain {
 	public void setPessoa(Pessoa pessoa) {
 		this.pessoa = pessoa;
 	}
-
 }
